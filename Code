@@ -1,0 +1,571 @@
+//Edanur Tosun 160202098 Merve Tafrali 160202100
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h> // zaman kutuphanesini ekledik
+
+clock_t b; // zamani tanimladik
+
+// Bir kayida ait veri yapisi
+struct Ogrenci
+{
+    char numara[50];
+    char ad[50];
+    char soyad[50];
+    char kayitsirasi[50];
+    char  ogretimturu[50];
+
+};
+
+//fonksiyon prototipleri
+int  OgrenciDuzenle(struct Ogrenci ogrenci[],int sayi);//
+int  KayitEkle();      // bonus adımı
+int  AyniBul(struct Ogrenci ogrenci[],int n);//
+void NumaraAta(int n1,int n2);     //numarası olmayan ogrencilere numara atanacak
+void SinifDagit(int toplamogrenci,int n1,int n2);     //Kullanıcıdan sınıf sayısı alınacak sınıflara dagılım yapılacak
+void FonkSure();
+//void ListeDuzenle(int n1,int n2);
+
+
+int main()
+{
+    b = clock();
+    printf("Prolab 2 Projesi\nBu proje dosyalama islemleri ile ilgilidir!");
+    FILE *ogrencikyt;
+    int i=0;
+
+
+    ogrencikyt = fopen("ogrenci_kayit_bilgileri.txt", "r"); //dosyayı actik
+    if((ogrencikyt = fopen("ogrenci_kayit_bilgileri.txt", "r"))==NULL) //dosya yolu dogru mu diye kontrol
+    {
+        printf("Dosya acilmadi!");
+        return 1;
+    }
+
+
+    int birsayisi;
+    int sayac=0;
+    struct Ogrenci ogrenci[460]; //max sayida ogrenci tanimladik
+
+    char c1[100]; //numara kısmı
+    char c2[100]; //ad kısmı
+    char c3[100] ; //soyad kısmı
+    char c4[100] ; // kayıt sırası
+    char c5[100] ; //ogretim turu
+
+    fscanf(ogrencikyt, "%s  %s  %s  %s  %s", c1,c2,c3,c4,c5) ;
+
+    for(i=0; !feof(ogrencikyt); i++)
+    {
+        //dosyadan ogrencileri kaydediyoruz
+        fscanf(ogrencikyt,"%s %s %s %s %s",ogrenci[i].numara,ogrenci[i].ad,ogrenci[i].soyad,ogrenci[i].kayitsirasi,ogrenci[i].ogretimturu);
+        //printf("%-s %-s %-s %-s %-s \n",ogrenci[i].numara,ogrenci[i].ad,ogrenci[i].soyad,ogrenci[i].kayitsirasi,ogrenci[i].ogretimturu);
+        sayac++;//ogrenci sayisi buluyor
+    }
+    printf("\nDosyadan Ogrenciler cekilmistir\nToplam ogrenci sayisi:%d\n",sayac);
+    birsayisi=AyniBul(ogrenci,sayac);//ayni olan ogrencileri bulmak icin fonksiyonu cagiriyor
+
+    int ikisayisi=sayac-birsayisi;
+
+    NumaraAta(birsayisi,ikisayisi);
+    //ListeDuzenle(birsayisi,ikisayisi);
+    SinifDagit(sayac,birsayisi,ikisayisi);
+
+    FonkSure();
+
+}
+int AyniBul(struct Ogrenci ogrenci[],int n)
+{
+    FILE *birinciogretim;
+    birinciogretim=fopen("birinciogretim.txt","w+");
+    FILE *ikinciogretim;
+    ikinciogretim=fopen("ikinciogretim.txt","w+");
+    int i;
+    int sayac=0;
+    int sayac1=0;
+    int sayac2=0;
+    int aynilar[10];
+
+
+    for(i=0; i<n; i++)
+
+    {
+
+
+        int sonuc=strcmp(ogrenci[i].ad,ogrenci[i+1].ad); //gelen ogrenci bir sonrakinin adina benziyor mu?
+        if(strcmp(ogrenci[i].ad,ogrenci[i+1].ad)==0 && strcmp(ogrenci[i].soyad,ogrenci[i+1].soyad)==0)
+        {
+
+            aynilar[sayac]=i; //ayni isim ve soyadsa indislerini tutuyoruz
+            sayac++;
+
+        }
+        else
+
+        {
+
+            if(strcmp(ogrenci[i].ogretimturu,"I") == 0)
+            {
+
+                fprintf(birinciogretim,"%-6s\t%-7s\t%-7s\t%-3s\t%-s \n",ogrenci[i].numara,ogrenci[i].ad,ogrenci[i].soyad,ogrenci[i].kayitsirasi,ogrenci[i].ogretimturu);
+                sayac1++;
+            }
+
+
+            else
+            {
+                fprintf(ikinciogretim,"%-6s\t%-7s\t%-7s\t%-3s\t%-s \n",ogrenci[i].numara,ogrenci[i].ad,ogrenci[i].soyad,ogrenci[i].kayitsirasi,ogrenci[i].ogretimturu);
+                sayac2++;
+            }
+
+        }
+    }
+
+
+
+    printf("Ayni olan ogrenciler asagidaki gibidir! Liste Guncellenmistir\n");
+    for(i=0; i<6; i++)
+        printf("%d %-6s\t%-7s\t%-7s\t%-3s\t%-s \n",aynilar[i],ogrenci[aynilar[i]].numara,ogrenci[aynilar[i]].ad,ogrenci[aynilar[i]].soyad,ogrenci[aynilar[i]].kayitsirasi,ogrenci[aynilar[i]].ogretimturu);
+
+    fclose(ikinciogretim);
+    fclose(birinciogretim);
+
+
+    return sayac1;//ana fonksiyona aynilarin indislerini gönderiyoruz
+
+
+
+}
+
+
+void NumaraAta(int n1,int n2)
+{
+    FILE *guncel1;
+    guncel1=fopen("birinciogretimnumarali.txt","w");//birinci ogretimler yazilacak
+    FILE *guncel2;
+    guncel2=fopen("ikinciogretimnumarali.txt","w");//ikinci ogretimler yazilacak
+    int i,j;
+    FILE *birogret;
+    birogret=fopen("birinciogretim.txt","r");//birinci ogretimleri okuyoruz
+    FILE *ikiogret;
+    ikiogret=fopen("ikinciogretim.txt","r");//ikinci ogretimleri okuyoruz
+
+    struct Ogrenci ikiog[n1+3];
+    struct Ogrenci birog[n2+3];
+    int x1[n1+1];
+    int x2[n2+1];
+    int sayac1=0;
+    int sayac2=0;
+    int sayac3=0;
+    int sayac4=0;
+
+    if((birogret = fopen("birinciogretim.txt", "r"))==NULL)
+    {
+        printf("Dosya acilmadi!");
+        return 1;
+    }
+    if((ikiogret = fopen("ikinciogretim.txt", "r"))==NULL)
+    {
+        printf("Dosya acilmadi!");
+        return 1;
+    }
+    for(i=0; !feof(birogret); i++)
+    {
+        //dosyadan birinci ogretimleri okuyoruz
+        fscanf(birogret,"%s %s %s %s %s", birog[i].numara, birog[i].ad, birog[i].soyad, birog[i].kayitsirasi, birog[i].ogretimturu);
+        // printf("%-s %-s %-s %-s %-s \n", birog[i].numara, birog[i].ad, birog[i].soyad, birog[i].kayitsirasi, birog[i].ogretimturu);
+        //sayac++;//ogrenci sayisi buluyor
+    }
+
+    for(i=0; !feof(ikiogret); i++)
+    {
+        //dosyadan ikinci ogretimleri okuyoruz
+        fscanf(ikiogret,"%s %s %s %s %s", ikiog[i].numara, ikiog[i].ad, ikiog[i].soyad, ikiog[i].kayitsirasi, ikiog[i].ogretimturu);
+        //printf("%-s %-s %-s %-s %-s \n", ikiog[i].numara, ikiog[i].ad, ikiog[i].soyad, ikiog[i].kayitsirasi, ikiog[i].ogretimturu);
+        //sayac++;//ogrenci sayisi buluyor
+    }
+    for (j=0 ; j<n1 ; j++)
+    {
+        if(strcmp(birog[j].numara,"-")==0)
+        {
+            //numarası olmayan ogrencilere numara atıyoruz
+
+            x1[sayac1]=(1701000+(atoi(birog[j].kayitsirasi)));
+            fprintf(guncel1,"%-6d\t%-7s\t%-7s\t%-3s\t%-s \n",x1[sayac1],birog[j].ad,birog[j].soyad,birog[j].kayitsirasi,birog[j].ogretimturu);
+            sayac1++;
+
+        }
+        else
+        {
+            //numarasi olan ogrencileri yazdir
+            fprintf(guncel1,"%-6s\t%-7s\t%-7s\t%-3s\t%-s \n",birog[j].numara,birog[j].ad,birog[j].soyad,birog[j].kayitsirasi,birog[j].ogretimturu);
+            sayac2++;
+
+        }
+
+
+
+    }
+
+    for (j=0 ; j<n2 ; j++)
+    {
+        if(strcmp(ikiog[j].numara,"-")==0)
+        {
+            //numarası olmayan ogrencilere numara atıyoruz
+            x2[sayac2]=(1702000+(atoi(ikiog[j].kayitsirasi)));
+            fprintf(guncel2,"%-6d\t%-7s\t%-7s\t%-3s\t%-s \n",x2[sayac2],ikiog[j].ad,ikiog[j].soyad,ikiog[j].kayitsirasi,ikiog[j].ogretimturu);
+            sayac3++;
+        }
+        else
+        {
+            //numarasi olan ogrencileri yazdir
+            fprintf(guncel2,"%-6s\t%-7s\t%-7s\t%-3s\t%-s \n",ikiog[j].numara,ikiog[j].ad,ikiog[j].soyad,ikiog[j].kayitsirasi,ikiog[j].ogretimturu);
+            sayac4++;
+        }
+    }
+    printf("\nBirinci ve ikinci ogretim ogrencilerine numara atanmistir!\n");
+    int secim=1;
+    int secim2=0;
+    int k=1;
+    printf("Dosyaya ogrenci eklemek ister misiniz? E:0 H:1\n");
+    scanf("%d",&secim);
+    if(secim!=0 && secim!=1)
+    {
+        printf("Yanlis secim yaptiniz!\n");
+        secim=1;
+    }
+    while(secim==0)
+    {
+        printf("1.Ogretim mi? E:0 H:1\n");
+        scanf("%d",&secim2);
+        if(secim2==0)
+        {
+            printf("Sirasiyla ogrenci numarasi adi soyadi kayit sirasi ve ogretim turu giriniz!:") ;
+            scanf("%s %s %s %s %s", birog[n1+k].numara, birog[n1+k].ad, birog[n1+k].soyad, birog[n1+k].kayitsirasi, birog[n1+k].ogretimturu);
+            fprintf(guncel1,"%-6d\t%-7s\t%-7s\t%-3s\t%-s \n",birog[n1+k].numara, birog[n1+k].ad, birog[n1+k].soyad, birog[n1+k].kayitsirasi, birog[n1+k].ogretimturu);
+            k++;
+
+        }
+        else
+        {
+            printf("Sirasiyla ogrenci adi soyadi kayit sirasi ve ogretim turu giriniz!:") ;
+            scanf("%s %s %s %s %s", ikiog[n1+k].numara, ikiog[n1+k].ad, ikiog[n1+k].soyad, ikiog[n1+k].kayitsirasi, ikiog[n1+k].ogretimturu);
+            fprintf(guncel2,"%-6d\t%-7s\t%-7s\t%-3s\t%-s \n",ikiog[n1+k].numara, ikiog[n1+k].ad, ikiog[n1+k].soyad, ikiog[n1+k].kayitsirasi, birog[n1+k].ogretimturu);
+            k++;
+        }
+        printf("Dosyaya ogrenci eklemek ister misiniz? E:0 H:1\n");
+        scanf("%d",&secim);
+        if(secim!=0 && secim!=1)
+        {
+            printf("Yanlis secim yaptiniz!\n");
+            secim=1;
+        }
+    }
+
+    fclose(guncel1);
+    fclose(guncel2);
+
+
+
+
+
+
+}
+/*
+void ListeDuzenle(int n1,int n2)
+{
+
+    FILE *guncelliste;
+    guncelliste=fopen("Siralinumaralar1.txt","w");
+    FILE *guncelliste2;
+    guncelliste2=fopen("Siralinumaralar2.txt","w");
+    int i=0;
+    FILE *ogrenciguncel2;
+
+    ogrenciguncel2 = fopen("ikinciogretimnumarali.txt", "r"); //dosyayı actik
+    if((ogrenciguncel2 = fopen("ikinciogretimnumarali.txt", "r"))==NULL) //dosya yolu dogru mu diye kontrol
+    {
+        printf("Dosya acilmadi!");
+        return 1;
+    }
+    FILE *ogrenciguncel1;
+
+    ogrenciguncel1 = fopen("birinciogretimnumarali.txt", "r"); //dosyayı actik
+    if((ogrenciguncel1 = fopen("birinciogretimnumarali.txt", "r"))==NULL) //dosya yolu dogru mu diye kontrol
+    {
+        printf("Dosya acilmadi!");
+        return 1;
+    }
+    int j;
+    char gecicinu[50];
+    char geciciad[50];
+    char gecicisoyad[50];
+    char geciciot[50];
+    char geciciky[50];
+    struct Ogrenci ogrenci1[n1];
+    struct Ogrenci ogrenci2[n2];
+
+    for(i=0; !feof(ogrenciguncel1); i++)
+    {
+        //dosyadan ogrencileri kaydediyoruz
+        fscanf(ogrenciguncel1,"%s %s %s %s %s",ogrenci1[i].numara,ogrenci1[i].ad,ogrenci1[i].soyad,ogrenci1[i].kayitsirasi,ogrenci1[i].ogretimturu);
+        //printf("%-s %-s %-s %-s %-s \n",ogrenci[i].numara,ogrenci[i].ad,ogrenci[i].soyad,ogrenci[i].kayitsirasi,ogrenci[i].ogretimturu);
+    }
+    for(i=0; !feof(ogrenciguncel2); i++)
+    {
+        //dosyadan ogrencileri kaydediyoruz
+        fscanf(ogrenciguncel2,"%s %s %s %s %s",ogrenci2[i].numara,ogrenci2[i].ad,ogrenci2[i].soyad,ogrenci2[i].kayitsirasi,ogrenci2[i].ogretimturu);
+        //printf("%-s %-s %-s %-s %-s \n",ogrenci[i].numara,ogrenci[i].ad,ogrenci[i].soyad,ogrenci[i].kayitsirasi,ogrenci[i].ogretimturu);
+    }
+
+
+    for( i=0; i<n1-1; i++)
+    {
+        for(j=i+1; j<n1; j++)
+        {
+            if(strcmp(ogrenci1[i].numara,ogrenci1[i].numara)>0)
+            {
+                strcpy(gecicinu,ogrenci1[i].numara);
+                strcpy(ogrenci1[i].numara,ogrenci1[j].numara);
+                strcpy(ogrenci1[j].numara,gecicinu);
+                strcpy(geciciad,ogrenci1[i].ad);
+                strcpy(ogrenci1[i].ad,ogrenci1[j].ad);
+                strcpy(ogrenci1[j].ad,geciciad);
+                strcpy(gecicinu,ogrenci1[i].soyad);
+                strcpy(ogrenci1[i].soyad,ogrenci1[j].soyad);
+                strcpy(ogrenci1[j].soyad,gecicisoyad);
+                strcpy(gecicinu,ogrenci1[i].kayitsirasi);
+                strcpy(ogrenci1[i].kayitsirasi,ogrenci1[j].kayitsirasi);
+                strcpy(ogrenci1[j].kayitsirasi,geciciky);
+                strcpy(gecicinu,ogrenci1[i].ogretimturu);
+                strcpy(ogrenci1[i].ogretimturu,ogrenci1[j].ogretimturu);
+                strcpy(ogrenci1[j].ogretimturu,geciciot);
+            }
+        }
+    }
+    for (j=0 ; j<n1 ; j++)
+    {
+
+       fprintf(guncelliste2,"%-6s\t%-7s\t%-7s\t%-3s\t%-s \n",ogrenci1[i].numara,ogrenci1[i].ad,ogrenci1[i].soyad,ogrenci1[i].kayitsirasi,ogrenci1[i].ogretimturu);
+
+    }
+
+
+
+
+
+
+}*/
+void SinifDagit(int toplamogrenci,int n1,int n2)
+{
+
+    int sinisayisi;
+    printf("\nToplam Ogrenci:%d\n",toplamogrenci);
+    printf("Sinif sayisi giriniz:");
+    scanf("%d",&sinisayisi);
+    int kapasite[sinisayisi];
+    int i,j;
+    int toplam=0;
+    int gecici;
+    int esitdag=0;
+    int siniflar[sinisayisi];
+
+    int eksik=0;
+
+    int siniflarea[sinisayisi];
+
+    int esitdag2=0;
+    int siniflar2[sinisayisi];
+
+    int eksik2=0;
+
+    int siniflarea2[sinisayisi];
+
+    for(i=0; i<sinisayisi; i++)
+    {
+        printf("\nKapasite[%d]:",i+1);
+        scanf("%d",&kapasite[i]);
+        toplam+=kapasite[i];
+
+    }
+    if(toplam<n1)
+    {
+        printf("1.Ogretim Toplam ogrenci:%d Sizin girdiginiz kapasite:%d\nGirdiginiz Kapasite ogrenci sayisine uygun degil!",n1,toplam);
+        return;
+    }
+    if(toplam<n2)
+    {
+        printf("2.Ogretim Toplam ogrenci:%d Sizin girdiginiz kapasite:%d\nGirdiginiz Kapasite ogrenci sayisine uygun degil!",n2,toplam);
+        return;
+    }
+    for( i=0; i<sinisayisi-1; i++)
+    {
+        for(j=i+1; j<sinisayisi; j++)
+        {
+            if(kapasite[i] > kapasite[j])
+            {
+                gecici = kapasite[i];
+                kapasite[i] = kapasite[j];
+                kapasite[j] = gecici;
+            }
+        }
+    }
+    printf("\nBuyukten Kucuge Kapasite");
+
+    for(i=0; i<sinisayisi; i++)
+    {
+        printf("\nKapasite:%d",kapasite[i]);
+
+
+    }
+
+    esitdag=n1/sinisayisi;
+    for(i=0; i<sinisayisi; i++)
+    {
+        if(kapasite[i]<esitdag)
+        {
+            siniflar[i]=kapasite[i];
+            eksik+=(esitdag-kapasite[i]);
+        }
+        else
+        {
+            siniflar[i]=esitdag;
+            if(kapasite[i]>esitdag && (siniflar[i]+eksik)<kapasite[i])
+            {
+                siniflar[i]+=eksik;
+                eksik=0;
+
+            }
+            else
+            {
+                siniflar[i]+=kapasite[i]-esitdag;
+                eksik-=(kapasite[i]-esitdag);
+            }
+        }
+    }
+    esitdag2=n2/sinisayisi;
+    for(i=0; i<sinisayisi; i++)
+    {
+        if(kapasite[i]<esitdag)
+        {
+            siniflar2[i]=kapasite[i];
+            eksik2+=(esitdag2-kapasite[i]);
+        }
+        else
+        {
+            siniflar2[i]=esitdag2;
+            if(kapasite[i]>esitdag2 && (siniflar2[i]+eksik2)<kapasite[i])
+            {
+                siniflar2[i]+=eksik2;
+                eksik2=0;
+
+            }
+            else
+            {
+                siniflar2[i]+=kapasite[i]-esitdag2;
+                eksik2-=(kapasite[i]-esitdag2);
+            }
+        }
+    }
+    printf("\nDersi alan ogrenci sayisi 1.Ogretim:%d  2.Ogretim:%d",n1,n2);
+     printf("\n");
+    for(i=0; i<sinisayisi; i++)
+    {
+        printf("\nEsit Dagilim Siniflar 1:%d",siniflar2[i]);
+
+
+    }
+    printf("\n");
+    for(i=0; i<sinisayisi; i++)
+    {
+        printf("\nEsit Dagilim Siniflar 2:%d",siniflar2[i]);
+
+
+    }
+    for( i=0; i<sinisayisi-1; i++)
+    {
+        for(j=i+1; j<sinisayisi; j++)
+        {
+            if(kapasite[i] < kapasite[j])
+            {
+                gecici = kapasite[i];
+                kapasite[i] = kapasite[j];
+                kapasite[j] = gecici;
+            }
+        }
+    }
+
+    int enazdag=n1;
+    int tp=0;
+    for(i=0; i<sinisayisi; i++)
+    {
+
+        if(enazdag>kapasite[i])
+        {
+            siniflarea[i]=kapasite[i];
+            enazdag-=kapasite[i];
+
+
+        }
+        else
+        {
+            siniflarea[i]=enazdag;
+        }
+
+
+    }
+    int enazdag2=n2;
+    int tp2=0;
+    for(i=0; i<sinisayisi; i++)
+    {
+
+        if(enazdag2>kapasite[i])
+        {
+            siniflarea2[i]=kapasite[i];
+            enazdag2-=kapasite[i];
+
+
+        }
+        else
+        {
+            siniflarea2[i]=enazdag;
+        }
+
+
+    }
+     printf("\n");
+    for(i=0; i<sinisayisi; i++)
+    {
+        printf("\nEn az sinif dagilimi 1:%d",siniflarea[i]);
+
+
+    }
+    printf("\n");
+    for(i=0; i<sinisayisi; i++)
+    {
+        printf("\nEn az sinif dagilimi 2:%d",siniflarea2[i]);
+
+
+    }
+     printf("\n");
+    printf("\nTum Ogrenciler Yerlestirildi!!!\n");
+
+
+}
+
+void FonkSure()
+{
+
+    b = clock() - b;
+    printf("\n----------------------------------------------\n");
+    printf("\nProjenin calisma suresi : %.2f saniyedir. \n", ((float)b)/CLOCKS_PER_SEC,b);  //CLOCKS_PER_SEC sureyi saniyeye ceviriyor.
+    printf("----------------------------------------------\n");
+
+
+}
+
+
+
+
+
